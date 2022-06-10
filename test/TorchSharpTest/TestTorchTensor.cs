@@ -4449,14 +4449,54 @@ namespace TorchSharp
         [Fact]
         public void RoundTest()
         {
-            var data = new float[] { 1.1f, 2.0f, 3.1f };
-            var expected = data.Select(x => MathF.Round(x)).ToArray();
-            var input = torch.tensor(data);
-            var res = input.round();
-            Assert.True(res.allclose(torch.tensor(expected)));
+            var rnd = new Random();
+            var data = Enumerable.Range(1,100).Select(i => (float)rnd.NextDouble()*10000).ToArray();
 
-            input.round_();
-            Assert.True(res.allclose(torch.tensor(expected)));
+            {
+                var expected = data.Select(x => MathF.Round(x)).ToArray();
+                var input = torch.tensor(data);
+                var res = input.round();
+                Assert.True(res.allclose(torch.tensor(expected)));
+
+                input.round_();
+                Assert.True(input.allclose(torch.tensor(expected)));
+            }
+            {
+                var expected = data.Select(x => MathF.Round(x*10.0f)/10.0f).ToArray();
+                var input = torch.tensor(data);
+                var res = input.round(1);
+                Assert.True(res.allclose(torch.tensor(expected)));
+
+                input.round_(1);
+                Assert.True(input.allclose(torch.tensor(expected)));
+            }
+            {
+                var expected = data.Select(x => MathF.Round(x * 100.0f) / 100.0f).ToArray();
+                var input = torch.tensor(data);
+                var res = input.round(2);
+                Assert.True(res.allclose(torch.tensor(expected)));
+
+                input.round_(2);
+                Assert.True(input.allclose(torch.tensor(expected)));
+            }
+            {
+                var expected = data.Select(x => MathF.Round(x * 0.1f) / 0.1f).ToArray();
+                var input = torch.tensor(data);
+                var res = input.round(-1);
+                Assert.True(res.allclose(torch.tensor(expected)));
+
+                input.round_(-1);
+                Assert.True(input.allclose(torch.tensor(expected)));
+            }
+            {
+                var expected = data.Select(x => MathF.Round(x * 0.01f) / 0.01f).ToArray();
+                var input = torch.tensor(data);
+                var res = input.round(-2);
+                Assert.True(res.allclose(torch.tensor(expected)));
+
+                input.round_(-2);
+                Assert.True(input.allclose(torch.tensor(expected)));
+            }
         }
 
         [Fact]
@@ -5119,6 +5159,23 @@ namespace TorchSharp
             Assert.Equal(new long[] { 2 }, res3.shape);
             Assert.Equal(2.0f, res3[0].ToSingle());
             Assert.Equal(4.0f, res3[1].ToSingle());
+        }
+
+        [Fact]
+        public void RollTest()
+        {
+            using var x = torch.tensor(new long[] { 1, 2, 3, 4, 5, 6, 7, 8 }).view(4, 2);
+            using var expected_1 = torch.tensor(new long[] { 7, 8, 1, 2, 3, 4, 5, 6 }).view(4, 2);
+            using var expected_2 = torch.tensor(new long[] { 5, 6, 7, 8, 1, 2, 3, 4 }).view(4, 2);
+            using var expected_m1 = torch.tensor(new long[] { 3, 4, 5, 6, 7, 8, 1, 2 }).view(4, 2);
+
+            using var expected_tuple = torch.tensor(new long[] { 6, 5, 8, 7, 2, 1, 4, 3 }).view(4, 2);
+
+            Assert.Equal(expected_1, x.roll(1, 0));
+            Assert.Equal(expected_2, x.roll(2, 0));
+            Assert.Equal(expected_m1, x.roll(-1, 0));
+            Assert.Equal(expected_tuple, x.roll((2,1), (0,1)));
+            Assert.Equal(expected_tuple, x.roll(new long[] { 2, 1 }, new long[] { 0, 1 }));
         }
 
         [Fact]
