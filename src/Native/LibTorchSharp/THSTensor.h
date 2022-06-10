@@ -1069,6 +1069,10 @@ EXPORT_API(Tensor) THSTensor_std(const Tensor tensor);
 
 EXPORT_API(Tensor) THSTensor_std_along_dimensions(const Tensor tensor, const int64_t* dimensions, int length, bool unbiased, bool keepdim);
 
+EXPORT_API(Tensor) THSTensor_std_mean(const Tensor tensor);
+
+EXPORT_API(Tensor) THSTensor_std_mean_along_dimensions(const Tensor tensor, const int64_t* dimensions, int length, bool unbiased, bool keepdim);
+
 EXPORT_API(Tensor) THSTensor_sub(const Tensor left, const Tensor right);
 
 EXPORT_API(Tensor) THSTensor_sub_(const Tensor left, const Tensor right);
