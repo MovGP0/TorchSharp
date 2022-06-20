@@ -4113,6 +4113,17 @@ namespace TorchSharp
             [DllImport("LibTorchSharp")]
             static extern IntPtr THSTensor_std_along_dimensions(IntPtr tensor, IntPtr dimensions, int length, bool unbiased, bool keepdim);
 
+            // Private, shared implementation
+
+            private unsafe Tensor _std(ReadOnlySpan<long> dimensions, bool unbiased = true, bool keepDimension = false, ScalarType? type = null)
+            {
+                fixed (long* pdims = dimensions) {
+                    var res = THSTensor_std_along_dimensions(Handle, (IntPtr)pdims, dimensions.Length, unbiased, keepDimension);
+                    if (res == IntPtr.Zero) { torch.CheckForErrors(); }
+                    return new Tensor(res);
+                }
+            }
+
             /// <summary>Calculates the standard deviation of all elements in the tensor.</summary>
             /// <remarks>
             /// If <paramref name="unbiased" /> is <value>true</value>, Bessel’s correction will be used.
@@ -4126,13 +4137,7 @@ namespace TorchSharp
             [System.Diagnostics.Contracts.Pure]
             public Tensor std(long[] dimensions, bool unbiased = true, bool keepDimension = false, ScalarType? type = null)
             {
-                unsafe {
-                    fixed (long* pdims = dimensions) {
-                        var res = THSTensor_std_along_dimensions(Handle, (IntPtr)pdims, dimensions.Length, unbiased, keepDimension);
-                        if (res == IntPtr.Zero) { torch.CheckForErrors(); }
-                        return new Tensor(res);
-                    }
-                }
+                return _std(dimensions, unbiased, keepDimension, type);
             }
 
             /// <summary>Calculates the standard deviation of all elements in the tensor.</summary>
@@ -4148,13 +4153,7 @@ namespace TorchSharp
             [System.Diagnostics.Contracts.Pure]
             public Tensor std(ReadOnlySpan<long> dimensions, bool unbiased = true, bool keepDimension = false, ScalarType? type = null)
             {
-                unsafe {
-                    fixed (long* pdims = dimensions) {
-                        var res = THSTensor_std_along_dimensions(Handle, (IntPtr)pdims, dimensions.Length, unbiased, keepDimension);
-                        if (res == IntPtr.Zero) { torch.CheckForErrors(); }
-                        return new Tensor(res);
-                    }
-                }
+                return _std(dimensions, unbiased, keepDimension, type);
             }
 
             /// <summary>Calculates the standard deviation of all elements in the tensor.</summary>
@@ -4182,7 +4181,7 @@ namespace TorchSharp
             /// <param name="type"></param>
             /// <returns>The <see cref="Tensor">output tensor</see>.</returns>
             [System.Diagnostics.Contracts.Pure]
-            public Tensor std((long,long) dimensions, bool unbiased = true, bool keepDimension = false, ScalarType? type = null)
+            public Tensor std((long, long) dimensions, bool unbiased = true, bool keepDimension = false, ScalarType? type = null)
                 => std(stackalloc[] { dimensions.Item1, dimensions.Item2 }, unbiased, keepDimension, type);
 
             /// <summary>Calculates the standard deviation of all elements in the tensor.</summary>
@@ -4215,9 +4214,19 @@ namespace TorchSharp
                     torch.CheckForErrors();
                 return (new Tensor(res), new Tensor(mean));
             }
-            
+
             [DllImport("LibTorchSharp")]
             static extern IntPtr THSTensor_std_mean_along_dimensions(IntPtr tensor, IntPtr dimensions, int length, bool unbiased, bool keepdim, out IntPtr mean);
+
+            // Private, shared implementation.
+            private unsafe (Tensor std, Tensor mean) _std_mean(ReadOnlySpan<long> dimensions, bool unbiased, bool keepDimension)
+            {
+                fixed (long* pdims = dimensions) {
+                    var res = THSTensor_std_mean_along_dimensions(Handle, (IntPtr)pdims, dimensions.Length, unbiased, keepDimension, out var mean);
+                    if (res == IntPtr.Zero || mean == IntPtr.Zero) { torch.CheckForErrors(); }
+                    return (new Tensor(res), new Tensor(mean));
+                }
+            }
 
             /// <summary>Calculates the standard deviation and mean of all elements in the tensor.</summary>
             /// <remarks>
@@ -4232,13 +4241,7 @@ namespace TorchSharp
             [System.Diagnostics.Contracts.Pure]
             public (Tensor std, Tensor mean) std_mean(long[] dimensions, bool unbiased = true, bool keepDimension = false, ScalarType? type = null)
             {
-                unsafe {
-                    fixed (long* pdims = dimensions) {
-                        var res = THSTensor_std_mean_along_dimensions(Handle, (IntPtr)pdims, dimensions.Length, unbiased, keepDimension, out var mean);
-                        if (res == IntPtr.Zero || mean == IntPtr.Zero) { torch.CheckForErrors(); }
-                        return (new Tensor(res), new Tensor(mean));
-                    }
-                }
+                return _std_mean(dimensions, unbiased, keepDimension);
             }
 
             /// <summary>Calculates the standard deviation and mean of all elements in the tensor.</summary>
@@ -4254,13 +4257,7 @@ namespace TorchSharp
             [System.Diagnostics.Contracts.Pure]
             public (Tensor std, Tensor mean) std_mean(ReadOnlySpan<long> dimensions, bool unbiased = true, bool keepDimension = false, ScalarType? type = null)
             {
-                unsafe {
-                    fixed (long* pdims = dimensions) {
-                        var res = THSTensor_std_mean_along_dimensions(Handle, (IntPtr)pdims, dimensions.Length, unbiased, keepDimension, out var mean);
-                        if (res == IntPtr.Zero || mean == IntPtr.Zero) { torch.CheckForErrors(); }
-                        return (new Tensor(res), new Tensor(mean));
-                    }
-                }
+                return _std_mean(dimensions, unbiased, keepDimension);
             }
 
             /// <summary>Calculates the standard deviation and mean of all elements in the tensor.</summary>
@@ -5339,8 +5336,7 @@ namespace TorchSharp
             {
                 if (dims.HasValue) {
                     return _roll(stackalloc long[1] { shifts }, new long[1] { dims.Value });
-                }
-                else {
+                } else {
                     return _roll(stackalloc long[1] { shifts }, null);
                 }
             }
@@ -5350,7 +5346,7 @@ namespace TorchSharp
             /// Elements that are shifted beyond the last position are re-introduced at the first position.
             /// If a dimension is not specified, the tensor will be flattened before rolling and then restored to the original shape.
             /// </summary>
-            public Tensor roll((long,long) shifts, (long,long) dims)
+            public Tensor roll((long, long) shifts, (long, long) dims)
             {
                 return _roll(stackalloc long[2] { shifts.Item1, shifts.Item2 }, new long[2] { dims.Item1, dims.Item2 });
             }
@@ -5815,7 +5811,7 @@ namespace TorchSharp
 
                 var dim = t.dim();
                 if (t.size().Length == 0) return "";
-                var sb = new StringBuilder(isFCreate ? string.Join("", Enumerable.Repeat(' ', (int) (mdim - dim))) : "");
+                var sb = new StringBuilder(isFCreate ? string.Join("", Enumerable.Repeat(' ', (int)(mdim - dim))) : "");
                 sb.Append('[');
                 var currentSize = t.size()[0];
                 if (dim == 1) {
@@ -5842,7 +5838,7 @@ namespace TorchSharp
                         PrintValue(sb, t.dtype, t[currentSize - 1].ToScalar(), fltFormat, actualCulturInfo);
                     }
                 } else {
-                    var newline = string.Join("", Enumerable.Repeat(newLine, (int) dim - 1).ToList());
+                    var newline = string.Join("", Enumerable.Repeat(newLine, (int)dim - 1).ToList());
                     if (currentSize <= 6) {
                         sb.Append(ToNumpyString(t[0], mdim, false, fltFormat, cultureInfo, newLine));
                         sb.Append(newline);
@@ -5860,7 +5856,7 @@ namespace TorchSharp
                             sb.Append(newline);
                         }
 
-                        sb.Append(string.Join("", Enumerable.Repeat(' ', (int) (mdim - dim))));
+                        sb.Append(string.Join("", Enumerable.Repeat(' ', (int)(mdim - dim))));
                         sb.Append(" ...");
                         sb.Append(newline);
 
@@ -6101,8 +6097,7 @@ namespace TorchSharp
                     for (long idx = 0; idx < shape[0]; idx++) {
                         result.Add(this[idx].ToScalar());
                     }
-                }
-                else {
+                } else {
                     for (long idx = 0; idx < shape[0]; idx++) {
                         result.Add(this[idx].tolist());
                     }
