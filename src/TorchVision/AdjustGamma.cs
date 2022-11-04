@@ -24,7 +24,7 @@ namespace TorchSharp
 
                 img = (gain * img.pow(gamma)).clamp(0, 1);
 
-                return transforms.ConvertImageDType(dtype).forward(img); ;
+                return transforms.ConvertImageDType(dtype).forward(img);
             }
 
             private double gamma;
@@ -35,7 +35,7 @@ namespace TorchSharp
         {
             /// <summary>
             /// Perform gamma correction on an image.
-            /// 
+            ///
             /// See: https://en.wikipedia.org/wiki/Gamma_correction
             /// </summary>
             /// <param name="gamma">
