@@ -61,14 +61,14 @@ echo        Please see https://github.com/dotnet/machinelearning/tree/master/Doc
 exit /b 1
 
 :VS2022
-:: Setup vars for VS2022
-set __PlatformToolset=v143
-set __VSVersion=17 2022
-if NOT "%__BuildArch%" == "arm64" (
-    :: Set the environment for the native build
-    call "%VS160COMNTOOLS%..\..\VC\Auxiliary\Build\vcvarsall.bat" %__VCBuildArch%
-)
-goto :SetupDirs
+:: :: Setup vars for VS2022
+:: set __PlatformToolset=v143
+:: set __VSVersion=17 2022
+:: if NOT "%__BuildArch%" == "arm64" (
+::     :: Set the environment for the native build
+::     call "%VS160COMNTOOLS%..\..\VC\Auxiliary\Build\vcvarsall.bat" %__VCBuildArch%
+:: )
+:: goto :SetupDirs
 
 :VS2019
 :: Setup vars for VS2019
