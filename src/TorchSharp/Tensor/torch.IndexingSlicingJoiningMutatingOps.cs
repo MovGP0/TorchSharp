@@ -365,9 +365,20 @@ namespace TorchSharp
             => input.squeeze(dim);
 
         // https://pytorch.org/docs/stable/generated/torch.stack
-        [Obsolete("not implemented", true)]
-        public static Tensor stack(IList<Tensor> tensors, long dim = 0L)
-            => throw new NotImplementedException();
+        /// <summary>
+        /// Concatenates a sequence of tensors along a new dimension.
+        /// </summary>
+        /// <returns></returns>
+        /// <remarks>All tensors need to be of the same size.</remarks>
+        public static Tensor stack(IEnumerable<Tensor> tensors, long dim = 0)
+        {
+            using var parray = new PinnedArray<IntPtr>();
+            IntPtr tensorsRef = parray.CreateArray(tensors.Select(p => p.Handle).ToArray());
+
+            var res = THSTensor_stack(tensorsRef, parray.Array.Length, dim);
+            if (res == IntPtr.Zero) { CheckForErrors(); }
+            return new Tensor(res);
+        }
 
         // https://pytorch.org/docs/stable/generated/torch.swapaxes
         public static Tensor swapaxes(Tensor input, long axis0, long axis1)

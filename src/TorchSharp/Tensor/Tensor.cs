@@ -3477,7 +3477,7 @@ namespace TorchSharp
             /// <param name="sizes">A list of sizes for each chunk</param>
             /// <param name="dim">The dimension along which to split the tensor.</param>
 
-            public Tensor[] split(ReadOnlySpan<long> sizes, int dim = 0)
+            public Tensor[] split(ReadOnlySpan<long> sizes, long dim = 0)
             {
                 IntPtr[] ptrArray;
 
@@ -3692,21 +3692,21 @@ namespace TorchSharp
             /// </summary>
             /// <param name="indices_or_sections">A list of split points</param>
             public Tensor[] dsplit((long, long) indices_or_sections)
-                => dsplat(new long[] { indices_or_sections.Item1, indices_or_sections.Item2 });
+                => dsplit(new long[] { indices_or_sections.Item1, indices_or_sections.Item2 });
 
             /// <summary>
             /// Splits input, a tensor with three or more dimensions, into multiple tensors depthwise according to indices_or_sections. Each split is a view of input.
             /// </summary>
             /// <param name="indices_or_sections">A list of split points</param>
             public Tensor[] dsplit((long, long, long) indices_or_sections)
-                => dsplat(new long[]{ indices_or_sections.Item1, indices_or_sections.Item2, indices_or_sections.Item3 });
+                => dsplit(new long[]{ indices_or_sections.Item1, indices_or_sections.Item2, indices_or_sections.Item3 });
 
             /// <summary>
             /// Splits input, a tensor with three or more dimensions, into multiple tensors depthwise according to indices_or_sections. Each split is a view of input.
             /// </summary>
             /// <param name="indices_or_sections">A list of split points</param>
             public Tensor[] dsplit((long, long, long, long) indices_or_sections)
-                => dsplat(new long[]{ indices_or_sections.Item1, indices_or_sections.Item2, indices_or_sections.Item3, indices_or_sections.Item4 });
+                => dsplit(new long[]{ indices_or_sections.Item1, indices_or_sections.Item2, indices_or_sections.Item3, indices_or_sections.Item4 });
 
             /// <summary>
             /// Splits input, a tensor with three or more dimensions, into multiple tensors depthwise according to indices_or_sections. Each split is a view of input.

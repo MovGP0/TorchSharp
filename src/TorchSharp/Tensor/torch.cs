@@ -50,21 +50,6 @@ namespace TorchSharp
         public static Tensor squeeze_(Tensor input, long? dim = null) => input.squeeze_(dim);
 
         /// <summary>
-        /// Concatenates a sequence of tensors along a new dimension.
-        /// </summary>
-        /// <returns></returns>
-        /// <remarks>All tensors need to be of the same size.</remarks>
-        public static Tensor stack(IEnumerable<Tensor> tensors, long dim = 0)
-        {
-            using var parray = new PinnedArray<IntPtr>();
-            IntPtr tensorsRef = parray.CreateArray(tensors.Select(p => p.Handle).ToArray());
-
-            var res = THSTensor_stack(tensorsRef, parray.Array.Length, dim);
-            if (res == IntPtr.Zero) { CheckForErrors(); }
-            return new Tensor(res);
-        }
-
-        /// <summary>
         /// Stack tensors in sequence horizontally (column wise).
         /// </summary>
         /// <param name="tensors"></param>
